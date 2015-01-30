@@ -5,14 +5,14 @@
 #define bstr(s) b##s
 
 typedef struct {
-  uint8_t b0:1;
-  uint8_t b1:1;
-  uint8_t b2:1;
-  uint8_t b3:1;
-  uint8_t b4:1;
-  uint8_t b5:1;
-  uint8_t b6:1;
-  uint8_t b7:1;
+	uint8_t b0:1;
+	uint8_t b1:1;
+	uint8_t b2:1;
+	uint8_t b3:1;
+	uint8_t b4:1;
+	uint8_t b5:1;
+	uint8_t b6:1;
+	uint8_t b7:1;
 } _bitmask;
 
 #define BITPOINTER(register,bit) ((volatile _bitmask*)&register)->bname(bit)
