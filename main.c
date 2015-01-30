@@ -11,15 +11,15 @@
 int main (void)
 {
 	uint8_t b;
-    init_serial();
+	init_serial();
 
-    for(;;) {
-    	while (rx_avail()) {
-    		b = rx();
-    		tx(b);
-    		if (b == 13) tx(10);
-    	}
-    }
+	for(;;) {
+		while (rx_avail()) {
+			b = rx();
+			tx(b);
+			if (b == 13) tx(10);
+		}
+	}
 
-    return 1;
+	return 1;
 }

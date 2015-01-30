@@ -17,15 +17,15 @@ typedef struct {
 
 #define BITPOINTER(register,bit) ((volatile _bitmask*)&register)->bname(bit)
 
-#define SET(x,y)    (x |= (1 << y))
-#define CLR(x,y)    (x &= ~(1 << y))
+#define SET(x,y) (x |= (1 << y))
+#define CLR(x,y) (x &= ~(1 << y))
 
-#define ON				1
-#define OUT				1
-#define HIGH			1
-#define IN 				0
-#define LOW				0
-#define OFF				0
+#define ON		1
+#define OUT		1
+#define HIGH		1
+#define IN 		0
+#define LOW		0
+#define OFF		0
 #define RESET_INT_FLAG	1
 
 #endif
