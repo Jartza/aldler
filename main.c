@@ -13,12 +13,6 @@ int main (void)
 	uint8_t b;
     init_serial();
 
-    tx(0x55);
-    tx(0x55);
-    tx(0x55);
-    tx(0x55);
-    tx(0x55);
-
     for(;;) {
     	while (rx_avail()) {
     		b = rx();

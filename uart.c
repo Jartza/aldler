@@ -56,8 +56,8 @@ void tx(const uint8_t c) {
     /* Enable timer compare interrupt and disable RX PCINT */
     PC_INT_RX = OFF;
     COMP_1A_FLAG = RESET_INT_FLAG;
-    COMP_1A_INT = ON;
     TCNT1 = 0;
+    COMP_1A_INT = ON;
 }
 
 
@@ -92,8 +92,7 @@ uint8_t rx() {
  */
 ISR(TIM1_COMPA_vect) {
     switch (state) {
-        case TX_START: // TX Start bit. Stop PCINT RX.
-            PC_INT_RX = OFF;
+        case TX_START: // TX Start bit.
             UART_TX = LOW;
             break;
         case TX_B0: // TX Data bits
@@ -113,7 +112,7 @@ ISR(TIM1_COMPA_vect) {
             COMP_1A_INT = OFF;
             break;
         case RX_B0: // RX Data bits
-            OCR1A = BAUD_DIV;   // Set timer speed to baudrate after RX start bit
+            OCR1A = BAUD_DIV;   // Set timer speed to baudrate after first RX
             TCNT1 = 0;          // Zero timer and Fall through
         case RX_B1:
         case RX_B2:
@@ -124,10 +123,10 @@ ISR(TIM1_COMPA_vect) {
         case RX_B7:
             current_byte = (current_byte >> 1) | (UART_RX ? 0x80 : 0x00);
             if (state == RX_B7) {
-                rx_put(current_byte);           // Store byte to buffer
                 COMP_1A_INT = OFF;              // Stop timer interrupts
-                PC_INT_RX = ON;                 // Enable PCINT for RX
                 PC_INT_FLAG = RESET_INT_FLAG;   // Clear PC Interrupt flag
+                rx_put(current_byte);           // Store byte to buffer
+                PC_INT_RX = ON;                 // Enable PCINT for RX
             }
             break;
     }
@@ -138,7 +137,6 @@ ISR(TIM1_COMPA_vect) {
 ISR(PCINT0_vect) {
     /* If pin is high, we're not interested */
     if (!UART_RX) {
-        /* Enable Timer interrupt & Disable Pin Change Interrupt */
         /* Compare value for RX (1.5 bits, sampe in middle of fist data bit) */
         OCR1A = BAUD_DIV_START;
         state = RX_B0;
@@ -146,7 +144,7 @@ ISR(PCINT0_vect) {
         /* Enable timer compare interrupt and disable RX PCINT */
         PC_INT_RX = OFF;
         COMP_1A_FLAG = RESET_INT_FLAG; // Clear pending timer interrupts
-        COMP_1A_INT = ON;
         TCNT1 = 0;
+        COMP_1A_INT = ON;
     }
 }

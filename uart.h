@@ -31,7 +31,7 @@
 
 
 #define BAUD        	9600
-#define BAUD_DIV    	((F_CPU / BAUD) - 1.5)
+#define BAUD_DIV    	((F_CPU / BAUD) - 0.5)
 #define BAUD_DIV_START  (BAUD_DIV * 1.4)
 
 /* Different states of RX/TX interrupt */
