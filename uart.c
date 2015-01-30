@@ -46,18 +46,14 @@ void init_serial() {
 
 /* Transmit a byte. Blocking, no buffering */
 void tx(const uint8_t c) {
-        /* Wait for buffer to empty (timer interrupt to stop) */
-        while (COMP_1A_INT);
+        while (COMP_1A_INT);            // Block while TX/RX is still in action
 
-        /* Push char to buffer and init state */
-        current_byte = c;
-        state = TX_START;
-
-        /* Enable timer compare interrupt and disable RX PCINT */
-        PC_INT_RX = OFF;
-        COMP_1A_FLAG = RESET_INT_FLAG;
-        TCNT1 = 0;
-        COMP_1A_INT = ON;
+        current_byte = c;               // Push TX byte
+        state = TX_START;               // Set state to Start bit
+        PC_INT_RX = OFF;                // Disable PCINT for RX
+        COMP_1A_FLAG = RESET_INT_FLAG;  // Reset pending interrupts
+        TCNT1 = 0;                      // Zero counter
+        COMP_1A_INT = ON;               // Enable CTC Interrupts
 }
 
 
@@ -92,10 +88,10 @@ uint8_t rx() {
  */
 ISR(TIM1_COMPA_vect) {
         switch (state) {
-                case TX_START: // TX Start bit.
+                case TX_START:                  // TX Start bit.
                         UART_TX = LOW;
                         break;
-                case TX_B0: // TX Data bits
+                case TX_B0:                     // TX Data bits
                 case TX_B1:
                 case TX_B2:
                 case TX_B3:
@@ -106,14 +102,14 @@ ISR(TIM1_COMPA_vect) {
                         UART_TX = (current_byte & 0x01);
                         current_byte >>= 1;
                         break;
-                case TX_STOP: // TX Stop bit. Enable PCINT for RX again.
+                case TX_STOP:                   // TX Stop bit. Enable PCINT for RX again.
                         UART_TX = HIGH;
                         PC_INT_RX = ON;
                         COMP_1A_INT = OFF;
                         break;
-                case RX_B0: // RX Data bits
-                        OCR1A = BAUD_DIV;   // Set timer speed to baudrate after first RX
-                        TCNT1 = 0;          // Zero timer and Fall through
+                case RX_B0:                     // RX Data bits
+                        OCR1A = BAUD_DIV;       // Set timer speed to baudrate after first RX
+                        TCNT1 = 0;              // Zero timer and Fall through
                 case RX_B1:
                 case RX_B2:
                 case RX_B3:
@@ -137,14 +133,11 @@ ISR(TIM1_COMPA_vect) {
 ISR(PCINT0_vect) {
         /* If pin is high, we're not interested */
         if (!UART_RX) {
-                /* Compare value for RX (1.5 bits, sampe in middle of fist data bit) */
-                OCR1A = BAUD_DIV_START;
-                state = RX_B0;
-
-                /* Enable timer compare interrupt and disable RX PCINT */
-                PC_INT_RX = OFF;
-                COMP_1A_FLAG = RESET_INT_FLAG; // Clear pending timer interrupts
-                TCNT1 = 0;
-                COMP_1A_INT = ON;
+                OCR1A = BAUD_DIV_START;         // Sample in the middle of first data bit
+                state = RX_B0;                  // State = First RX bit
+                PC_INT_RX = OFF;                // RX PCINT off
+                COMP_1A_FLAG = RESET_INT_FLAG;  // Clear pending timer interrupts
+                TCNT1 = 0;                      // Reset timer
+                COMP_1A_INT = ON;               // Enable CTC interrupt
         }
 }
